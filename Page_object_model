@@ -1,0 +1,48 @@
+package demowebshop;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
+	public class LoginPage {
+	    WebDriver driver;
+	    // Constructor
+	    public LoginPage(WebDriver driver) {
+	    	//assigning the driver coming from outside to the driver of this class
+	        this.driver = driver;
+	    }
+	    // 1.By is datatype
+	    //2.By is a class provided by selenium   ..the refrence varible will store a locator
+	    By loginLink = By.className("ico-login");
+	    By emailField = By.id("Email");
+	    By passwordField = By.id("Password");
+	    By loginButton = By.xpath("//input[@class='button-1 login-button']");
+	    By logoutLink = By.linkText("Log out");
+	    By errorMessage = By.xpath("//div[@class='validation-summary-errors']");
+
+	    
+	    public void clickLogin() {
+	        driver.findElement(loginLink).click();
+	    }
+
+	    public void enterEmail(String email) {
+	        driver.findElement(emailField).sendKeys(email);
+	    }
+
+	    public void enterPassword(String password) {
+	        driver.findElement(passwordField).sendKeys(password);
+	    }
+
+	    public void clickLoginButton() {
+	        driver.findElement(loginButton).click();
+	    }
+
+	    public boolean LogoutDisplayed() {
+	        return driver.findElements(logoutLink).size() > 0;
+	    }
+
+	    public String getErrorMessage() {
+	        return driver.findElement(errorMessage).getText();
+	    }
+	}
+
+
+
