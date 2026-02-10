@@ -1,0 +1,302 @@
+package demowebshop;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import com.google.common.util.concurrent.Service;
+
+public class Demoweb_shop {
+	//declaring a reference variable
+	      WebDriver driver;
+	      //declaring  a reference variable
+	      LoginPage pom ;
+	      String price_book;
+	      String price_dress;
+          String price_album;
+		  String total_price;
+		  String uiprice;
+		  double total;
+		  //Time stamps "dharanii" + System.currentTimeMillis() + "@gmail.com"
+		  String email = "dharanii" + System.currentTimeMillis() + "@gmail.com";
+		  String password = "Dharanii!24";
+		  
+			@BeforeClass
+			public void beforeClass() {
+		 		//chrome driver (object)  is created and that object refrence is assigned to the varible 'driver' 
+			   
+				driver = new ChromeDriver();
+				//assigning this driver to the pom class so now it can operate the webbrowser
+				//pompage is a refrence varible 
+				//newLogin page(driver) here the constructor runs automatically ,the driver from the test class is passed to pom class
+				//so the test class driver is passed ,so no new browser is created 
+				//Loginpage (object ) is created and that object refrnce is assigned to the varible 
+				pom = new LoginPage(driver);
+				//navigating to the website
+				driver.get("https://demowebshop.tricentis.com/");
+				driver.manage().window().maximize();
+				driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(6));	
+				
+
+			}		
+	    
+	        
+
+	@Test
+	public void register()  {
+	    System.out.println(driver.getTitle());
+		//verifying either the Register link is active
+		Assert.assertTrue(driver.findElement(By.linkText("Register")).isDisplayed()&& driver.findElement(By.linkText("Register")).isEnabled(),"The registeraion link is not Interactive");
+		//user starts to register
+		driver.findElement(By.linkText("Register")).click();
+		driver.findElement(By.id("gender-male")).click();
+		
+		driver.findElement(By.id("FirstName")).sendKeys("dharanii");
+		driver.findElement(By.id("LastName")).sendKeys("muniappan");
+		driver.findElement(By.name("Email")).sendKeys(email);
+		driver.findElement(By.id("Password")).sendKeys(password);
+		driver.findElement(By.id("ConfirmPassword")).sendKeys(password);
+		driver.findElement(By.id("register-button")).click();
+        //user completes registering 	
+		String registration_successful=(driver.findElement(By.cssSelector("div.result")).getText());
+        Assert.assertEquals(registration_successful, "Your registration completed");
+		System.out.println(registration_successful);
+		Assert.assertTrue(driver.findElement(By.cssSelector("input.register-continue-button")).isEnabled(),"Registration completed  continue button is not Interactive");
+		driver.findElement(By.cssSelector("input.register-continue-button")).click();	
+		//logout 
+		driver.findElement(By.linkText("Log out")).click();
+		Assert.assertTrue(driver.findElement(By.linkText("Log in")).isDisplayed(),"You are not logged out ");
+		//User Logs_in again to double check weather the acc is created or not
+		//using page object model
+		//Login
+		 pom.clickLogin();
+	        pom.enterEmail(email);
+	        pom.enterPassword(password);
+	        pom.clickLoginButton();
+
+	        if (pom.LogoutDisplayed()) {
+	        	System.out.println("Login Success for: " + email);
+	        } 
+	        else {
+	        	String errorText = pom.getErrorMessage(); 
+	        	if (errorText.contains("The credentials provided are incorrect"))
+	        	{
+	        		System.out.println("Login Failed: Wrong password"); 
+	        		}
+	        	else if (errorText.contains("No customer account found"))
+	        		{ 
+	        		System.out.println("Login Failed: Wrong email or account not found"); 
+	        		} 
+	        	else { 
+	        		System.out.println("Login Failed: Unknown error " + errorText); 
+	        	} 
+	        	
+	        	}
+		
+	
+	}
+
+	@Test(dependsOnMethods = "register")
+	public void Addcart()  {
+		//User starts to add items to cart
+		//User searches item using Search bar
+		driver.findElement(By.xpath("//input[@id='small-searchterms']")).sendKeys("Computing and Internet");
+		Assert.assertTrue(driver.findElement(By.cssSelector("input.search-box-button")).isEnabled());
+		//user clicks search button
+		driver.findElement(By.cssSelector("input.search-box-button")).click();
+		driver.findElement(By.linkText("Computing and Internet")).click();
+		driver.findElement(By.xpath("//input[@id='add-to-cart-button-13']")).click();
+		//buffering the price of book to a variable
+		price_book = driver.findElement(By.xpath("//span[@class='price-value-13']")).getText();
+		//buffering the item 1 to a variable
+		String item_1=driver.findElement(By.xpath("//h1[@itemprop='name']")).getText();
+		System.out.println("Price of Product  " + item_1 +" is   " +price_book);
+		
+		//user Starts to add the next product to the cart
+		driver.findElement(By.partialLinkText("Apparel & Shoes")).click();
+		driver.findElement(By.linkText("50's Rockabilly Polka Dot Top JR Plus Size")).click();
+		driver.findElement(By.xpath("//input[@id='add-to-cart-button-5']")).click();
+		//buffering the 2nd items price 
+	    price_dress = driver.findElement(By.xpath("//div[@class='product-price']")).getText();
+	    String item_2=driver.findElement(By.xpath("//h1[@itemprop='name']")).getText();
+		System.out.println("Price of Product  "+ item_2 +" is:  " +price_dress);
+		
+		//user now startes to add the next item to the cart 
+		driver.findElement(By.partialLinkText("Digital downloads")).click();
+		driver.findElement(By.linkText("3rd Album")).click();
+		driver.findElement(By.xpath("//input[@id='add-to-cart-button-53']")).click();
+		//buffering the 3rd items price 
+		price_album = driver.findElement(By.cssSelector("span.price-value-53")).getText();
+		String item_3=driver.findElement(By.xpath("//h1[@itemprop='name']")).getText();
+		System.out.println("Price of Product  " +item_3 +" is:  " +price_album);
+		
+		//refreshing the ui
+		driver.findElement(By.xpath( "//a/img[@alt='Tricentis Demo Web Shop']")).click();
+		//cart
+		Assert.assertTrue(driver.findElement(By.className("ico-cart")).isDisplayed() && driver.findElement(By.className("ico-cart")).isEnabled());
+		//user clicks on cart
+		driver.findElement(By.className("ico-cart")).click();
+		//printing the carts quantity
+		System.out.println ("Cart quantity " +driver.findElement(By.cssSelector("span.cart-qty")).getText());
+		
+		//creating a list to store the products that are expected 
+		List <String> items_expected = new ArrayList<>();
+		//adding the items to the list (String)
+		items_expected.add(item_1);
+		items_expected.add(item_2);
+		items_expected.add(item_3);
+		//creating a  list to store the products that are in the actual cart (webelement)
+		List <WebElement> actual_products_in_cart_ui=driver.findElements(By.xpath("//a[@class='product-name']"));
+		//creating a string list to store the name of actual products in the cart
+		List<String>name_of_products_in_cart=new ArrayList<>();
+		//in a_p_i_c  we stored the products as webelement  so now we r looping each products in a_p_i_c  to varible product 
+		for(WebElement product:actual_products_in_cart_ui) {
+			//for each item in the a_p_i_c list loop it in product and get their text and add it in n_o_p_i_c list
+			name_of_products_in_cart.add(product.getText().trim());
+		}
+		//in items_expectd we have name of the items that we added to cart  so we r looping each name into (expected varible) 
+		for (String expected : items_expected) {
+			// printing each product from (expected)
+		    System.out.println("items expected in cart : " + expected);
+		    
+		    //Asserting  weather the n_o_p_i_c list contains the same product that we added .
+		    Assert.assertTrue(name_of_products_in_cart.contains(expected),"Product missing in cart: " + expected);
+		} ;
+		
+
+		driver.findElement(By.id("termsofservice")).click();
+		//user now checks out 
+		Assert.assertTrue(driver.findElement(By.id("checkout")).isDisplayed() && driver.findElement(By.id("checkout")).isEnabled());
+		driver.findElement(By.id("checkout")).click();}
+	
+		@Test(dependsOnMethods = "Addcart")
+		public void checkout() throws InterruptedException {
+			//User adds the billing address
+		Assert.assertTrue(driver.findElements(By.id("BillingNewAddress_Company")).size() > 0 &&driver.findElement(By.id("BillingNewAddress_Company")).isDisplayed());
+			 driver.findElement(By.id("BillingNewAddress_Company")).sendKeys("accenture");
+			 //user selects country using static dropdown
+			 WebElement country=driver.findElement(By.id("BillingNewAddress_CountryId"));
+			 //creating a object and assigning it to the reference variable
+			 //to use every method from select class
+			 Select dropdowncountry= new Select(country);
+			 dropdowncountry.selectByVisibleText("India");
+			 driver.findElement(By.id("BillingNewAddress_City")).sendKeys("chennai");
+			 driver.findElement(By.id("BillingNewAddress_Address1")).sendKeys("14B,Vgn residency");
+			 driver.findElement(By.id("BillingNewAddress_Address2")).sendKeys("west tambaram");
+			 driver.findElement(By.id("BillingNewAddress_ZipPostalCode")).sendKeys("324333");
+			 driver.findElement(By.id("BillingNewAddress_PhoneNumber")).sendKeys("807070071");
+			 driver.findElement(By.xpath("(//input[@class='button-1 new-address-next-step-button'])[1]")).click();
+			 //validating  is there any error in data entered
+			 Assert.assertFalse(driver.findElements(By.cssSelector("span.field-validation-error")).size() > 0,
+					    "Billing address error message is displayed");
+			 
+		 	
+		//user confirms the shipping address
+		driver.findElement(By.xpath("(//input[@title='Continue'])[2]")).click();
+		//user chooses the shipping method
+		driver.findElement(By.xpath("//input[@id='shippingoption_0']")).click();
+		driver.findElement(By.xpath("//input[@class='button-1 shipping-method-next-step-button']")).click();
+		//user selects credit card as payment method
+		driver.findElement(By.xpath("//input[@id='paymentmethod_2']")).click();
+		driver.findElement(By.xpath("//input[@class='button-1 payment-method-next-step-button']")).click();
+		//user selects cardtype
+		Thread.sleep(2000);
+		WebElement staticdropdown = driver.findElement(By.id("CreditCardType"));
+		Select dropdown = new Select(staticdropdown);
+		dropdown.selectByIndex(1);
+		
+		driver.findElement(By.id("CardholderName")).sendKeys("dharanii");
+		driver.findElement(By.id("CardNumber")).sendKeys("4111111111111111");
+		//user selects expiration data 
+		WebElement sdropdown_date = driver.findElement(By.id("ExpireMonth"));
+		Select dropdown_date = new Select(sdropdown_date);
+		dropdown_date.selectByIndex(7);
+		System.out.println("your choice:"  + dropdown.getFirstSelectedOption().getText());
+		driver.findElement(By.id("CardCode")).sendKeys("2332");
+		driver.findElement(By.xpath("//input[@class='button-1 payment-info-next-step-button']")).click();
+		//validating is there any error in the data entered
+		Assert.assertFalse(driver.findElements(By.cssSelector("div.validation-summary-errors")).size()>0,
+		"Card Details Error Msg Displayed");
+		//total price of the cart in L_checkout with shipping
+	    uiprice = driver.findElement(By.xpath("//span[@class='product-price order-total']/strong")).getText();
+	    //storing the prices of each items in the cart into a List
+		List<WebElement> subtotal = driver.findElements(By.cssSelector("span.product-subtotal"));
+		//storing the product name in list
+		List<WebElement>name_of_products=driver.findElements(By.xpath("//a[@class='product-name']"));
+		 total = 0;
+		 //using loop to print the items in cart 
+		for (int i = 0; i < subtotal.size(); i++) {
+			//product name stores each element from the loop 
+			//get(i).gets the element from index i and stores its text
+			String product_name=name_of_products.get(i).getText();
+		    String priceText = subtotal.get(i).getText();
+		    double price = Double.parseDouble(priceText.replaceAll("[^0-9.]", "")); 
+		    System.out.println("Items in cart: "  +product_name + "  price: " + price);
+		    
+		    //total=total+price
+		    total += price;
+		}
+
+		System.out.println("Total price of the product:  " + total);
+		System.out.println("Total price of the product with shipping:  " + uiprice);
+
+		}
+		
+		@Test(dependsOnMethods = "checkout")
+		public void priceverification() {
+		//converting the uiprice from string to double	
+		double total_price = Double.parseDouble(uiprice);
+		//buffering the shipping cost
+		String shipping_text=driver.findElement(By.xpath("(//span[@class='product-price'])[2]")).getText();
+		double shipping =Double.parseDouble(shipping_text.replaceAll("[^0-9.]", ""));
+		//adding total and shipping cost
+		double new_total = total + shipping;
+	
+		//validating either the totl price matches with actual price
+		if (total_price == new_total) {
+			driver.findElement(By.xpath("//input[@class='button-1 confirm-order-next-step-button']")).click();
+		} else 
+		{
+			System.out.println("Error in prices check your price and try again");
+			
+		}
+		}
+		@Test(dependsOnMethods = "priceverification")
+		public void order_successfull() {
+			//asserting the successfull msg
+		String s_msg = driver.findElement(By.xpath("//div[@class='title']/strong")).getText();
+		Assert.assertEquals(s_msg, "Your order has been successfully processed!");
+		System.out.println(s_msg);
+		String ordernumber = driver.findElement(By.xpath("//div/ul[@class='details']/li[1]")).getText();
+		System.out.println(ordernumber);
+		Assert.assertTrue(driver.findElement(By.xpath("//input[@class='button-2 order-completed-continue-button']")).isEnabled());
+		//explicit wait 
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));wait.until(ExpectedConditions.elementToBeClickable(
+		        By.xpath("//input[@class='button-2 order-completed-continue-button']")
+		)).click();
+
+		//driver.findElement(By.xpath("//input[@class='button-2 order-completed-continue-button']")).click();
+	} 
+		
+
+
+
+	@AfterClass
+	public void afterClass() {
+		driver.quit();
+	}
+
+}
+
